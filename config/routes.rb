@@ -1,24 +1,22 @@
-# Rails.application.routes.draw do
-#   root to: "home#index"
-
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
-
-  # Defines the root path route ("/")
-  # root "articles#index"
-# end
-
 # frozen_string_literal: true
 
 Rails.application.routes.draw do
-  devise_for :users, path: 'users',
-  path_names: { sign_in: 'sign_in', sign_out: 'sign_out', password: 'secret', registration: 'register', sign_up: 'sign_up' }
+  devise_for :users, path: '', path_names: {
+    sign_in: 'login',
+    sign_out: 'logout',
+    sign_up: 'register'
+  }
 
-  devise_scope :user do
-    get '/users/sign_out', to: 'devise/sessions#destroy'
-    root to: 'groups#index'
+  authenticated :user do
+    root 'categories#home', as: :authenticated_root
   end
-  
-  resources :users
-  resources :groups, only: [:index, :new, :create]
-  resources :expenses, only: [:index, :new, :create]
+
+  unauthenticated do
+    root 'categories#index', as: :unauthenticated_root
+  end
+
+  resources :categories, only: %i[index home new create destroy] do
+    get :home, on: :collection
+    resources :transactions, only: %i[index new create]
+  end
 end
